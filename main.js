@@ -3,10 +3,15 @@ let modData = {
 }
 let temporaryItemData = {}
 let existingIdentifiers = []
-
-document.getElementById("modTexturePreview").onload = async () => {
-    modData.image = await blobOfImg(document.getElementById("modTexturePreview"))
-}
+(async () => {
+    if (document.getElementById("modTexturePreview").complete) {
+        modData.image = await blobOfImg(document.getElementById("modTexturePreview"))
+    } else {
+        document.getElementById("modTexturePreview").onload = async () => {
+            modData.image = await blobOfImg(document.getElementById("modTexturePreview"))
+        }
+    }
+})();
 
 function promptTexture() {
     return new Promise((resolve) => {
