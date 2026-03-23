@@ -201,7 +201,7 @@ document.getElementById("addItem").addEventListener("click", async () => {
     document.getElementById("itemEditor").hidden = false
     temporaryItemData = {}
     temporaryItemData.name = "Item"
-    temporaryItemData.image = await (await fetch("./images/missingTexture")).blob()
+    temporaryItemData.image = await (await fetch("./images/missingTexture.png")).blob()
     document.getElementById("itemTexturePreview").src = "./images/missingTexture.png"
     document.getElementById("itemName").value = "Item"
 })
