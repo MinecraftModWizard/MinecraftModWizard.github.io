@@ -3,6 +3,101 @@ let modData = {
 }
 let temporaryItemData = {}
 let existingIdentifiers = []
+
+document.getElementById("modTexturePreview").onload = async () => {
+    modData.image = await blobOfImg(document.getElementById("modTexturePreview"))
+}
+
+function promptTexture() {
+    return new Promise((resolve) => {
+        const textureCanvasE = document.getElementById("textureCanvas");
+        const ctx = textureCanvasE.getContext("2d");
+        let drawing = false;
+        ctx.clearRect(0, 0, 16, 16)
+
+        const mouseDown = (e) => {
+            drawing = true
+            const rect = textureCanvasE.getBoundingClientRect();
+
+            const scaleX = textureCanvasE.width / rect.width;
+            const scaleY = textureCanvasE.height / rect.height;
+
+            const x = Math.floor((e.clientX - rect.left) * scaleX);
+            const y = Math.floor((e.clientY - rect.top) * scaleY);
+
+            ctx.fillStyle = document.getElementById("textureColor").value;
+            ctx.fillRect(x, y, 1, 1);
+        }
+
+        const mouseUp = (e) => {
+            drawing = false
+        }
+
+        const mouseMove = (e) => {
+            if (drawing) {
+                const rect = textureCanvasE.getBoundingClientRect();
+
+                const scaleX = textureCanvasE.width / rect.width;
+                const scaleY = textureCanvasE.height / rect.height;
+
+                const x = Math.floor((e.clientX - rect.left) * scaleX);
+                const y = Math.floor((e.clientY - rect.top) * scaleY);
+
+                ctx.fillStyle = document.getElementById("textureColor").value;
+                ctx.fillRect(x, y, 1, 1);
+            }
+        }
+
+        textureCanvasE.addEventListener("mousedown", mouseDown);
+
+        textureCanvasE.addEventListener("mouseup", mouseUp);
+
+        textureCanvasE.addEventListener("mouseleave", mouseUp);
+
+        textureCanvasE.addEventListener("mousemove", mouseMove)
+
+        document.getElementById("textureEditor").hidden = false;
+
+        document.getElementById("confirmTexture").addEventListener("click", () => {
+            document.getElementById("textureEditor").hidden = true;
+            textureCanvasE.removeEventListener("mousedown", mouseDown);
+            textureCanvasE.removeEventListener("mouseup", mouseUp);
+            textureCanvasE.removeEventListener("mousemove", mouseMove);
+            textureCanvasE.removeEventListener("mouseleave", mouseUp);
+            textureCanvasE.toBlob(function (blob) {
+                resolve(blob)
+            }, 'image/png');
+        })
+    });
+}
+
+
+
+function blobOfImg(img) {
+    return new Promise((resolve) => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+
+        const ctx = canvas.getContext('2d');
+
+        ctx.drawImage(img, 0, 0);
+
+        canvas.toBlob((blob) => {
+            resolve(blob)
+        }, 'image/png');
+
+        canvas.remove();
+    })
+}
+
+
+
+
+
+
+
+
 document.getElementById("optionBar").hidden = true;
 document.getElementById("makeModButton").addEventListener("click", () => {
 
@@ -100,7 +195,7 @@ document.getElementById("downloadMod").addEventListener("click", async () => {
                     }
                 },
                 components: {
-                    "minecraft:icon": modIdentifier + ":" + newItemIdentifier 
+                    "minecraft:icon": modIdentifier + ":" + newItemIdentifier
                 }
             }
         }))
@@ -133,76 +228,13 @@ document.getElementById("addElement").addEventListener("click", () => {
     document.getElementById("elementList").hidden = !document.getElementById("elementList").hidden
 })
 
-function promptTexture() {
-    return new Promise((resolve) => {
-        const textureCanvasE = document.getElementById("textureCanvas");
-        const ctx = textureCanvasE.getContext("2d");
-        let drawing = false;
-        ctx.clearRect(0, 0, 16, 16)
-
-        const mouseDown = (e) => {
-            drawing = true
-            const rect = textureCanvasE.getBoundingClientRect();
-
-            const scaleX = textureCanvasE.width / rect.width;
-            const scaleY = textureCanvasE.height / rect.height;
-
-            const x = Math.floor((e.clientX - rect.left) * scaleX);
-            const y = Math.floor((e.clientY - rect.top) * scaleY);
-
-            ctx.fillStyle = document.getElementById("textureColor").value;
-            ctx.fillRect(x, y, 1, 1);
-        }
-
-        const mouseUp = (e) => {
-            drawing = false
-        }
-
-        const mouseMove = (e) => {
-            if (drawing) {
-                const rect = textureCanvasE.getBoundingClientRect();
-
-                const scaleX = textureCanvasE.width / rect.width;
-                const scaleY = textureCanvasE.height / rect.height;
-
-                const x = Math.floor((e.clientX - rect.left) * scaleX);
-                const y = Math.floor((e.clientY - rect.top) * scaleY);
-
-                ctx.fillStyle = document.getElementById("textureColor").value;
-                ctx.fillRect(x, y, 1, 1);
-            }
-        }
-
-        textureCanvasE.addEventListener("mousedown", mouseDown);
-
-        textureCanvasE.addEventListener("mouseup", mouseUp);
-
-        textureCanvasE.addEventListener("mouseleave", mouseUp);
-
-        textureCanvasE.addEventListener("mousemove", mouseMove)
-
-        document.getElementById("textureEditor").hidden = false;
-
-        document.getElementById("confirmTexture").addEventListener("click", () => {
-            document.getElementById("textureEditor").hidden = true;
-            textureCanvasE.removeEventListener("mousedown", mouseDown);
-            textureCanvasE.removeEventListener("mouseup", mouseUp);
-            textureCanvasE.removeEventListener("mousemove", mouseMove);
-            textureCanvasE.removeEventListener("mouseleave", mouseUp);
-            textureCanvasE.toBlob(function (blob) {
-                resolve(blob)
-            }, 'image/png');
-        })
-    });
-}
-
 document.getElementById("addItem").addEventListener("click", async () => {
     document.getElementById("elementList").hidden = true
     document.getElementById("itemEditor").hidden = false
     temporaryItemData = {}
     temporaryItemData.name = "Item"
-    temporaryItemData.image = await (await fetch("./images/missingTexture.png")).blob()
     document.getElementById("itemTexturePreview").src = "./images/missingTexture.png"
+    temporaryItemData.image = await blobOfImg(document.getElementById("itemTexturePreview"))
     document.getElementById("itemName").value = "Item"
 })
 
@@ -223,4 +255,16 @@ document.getElementById("saveItem").addEventListener("click", () => {
     modData.items.push(temporaryItemData);
     temporaryItemData = {}
     document.getElementById("itemEditor").hidden = true
+})
+
+document.getElementById("modTexturePreview").addEventListener("click", async () => {
+    document.getElementById("setup").hidden = true
+    const newImg = await promptTexture()
+    temporaryItemData.image = newImg
+    document.getElementById("setup").hidden = false
+    const objectURL = URL.createObjectURL(newImg);
+    document.getElementById("modTexturePreview").src = objectURL
+    document.getElementById("modTexturePreview").onload = () => {
+        URL.revokeObjectURL(objectURL);
+    }
 })
