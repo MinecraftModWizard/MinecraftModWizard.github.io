@@ -247,7 +247,8 @@ document.getElementById("downloadMod").addEventListener("click", async () => {
                     "minecraft:geometry": "minecraft:geometry.full_block",
                     "minecraft:material_instances": {
                         "*": {
-                            texture: modIdentifier + ":" + newItemIdentifier
+                            texture: modIdentifier + ":" + newItemIdentifier,
+                            render_method: "blend"
                         }
                     }
                 }
