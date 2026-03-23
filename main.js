@@ -224,6 +224,8 @@ document.getElementById("downloadMod").addEventListener("click", async () => {
     });
     zip.file("RP/textures/item_texture.json", JSON.stringify(item_texture))
     zip.file("RP/texts/en_US.lang", lang)
+    zip.file("RP/pack_icon.png", modData.image)
+    zip.file("BP/pack_icon.png", modData.image)
     const generatedBlob = await zip.generateAsync({ type: "blob" });
     const handle = await window.showSaveFilePicker({
         suggestedName: "mod.mcaddon",
