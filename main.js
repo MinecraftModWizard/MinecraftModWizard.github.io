@@ -114,12 +114,29 @@ function createNewIdentifier(text) {
     if (numbers.includes(newText.charAt(0))) {
         newText = "item_" + newText
     }
-    let finalText = newText
-    let i = 1
+    newText = newText.toLowerCase();
+    let i = 0
+    let filterText = ""
+    const minecraftAllowedChars = [
+        'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+        'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+        '_', '-', '.'
+    ];
+    while (i < newText.length) {
+        if (!minecraftAllowedChars.includes(newText.charAt(i))) {
+            filterText = filterText + "_"
+        } else {
+            filterText = filterText + newText.charAt(i)
+        }
+        i++;
+    }
+    i = 1
+    let finalText = filterText
     if (existingIdentifiers.includes(finalText)) {
         while (existingIdentifiers.includes(finalText)) {
             i++;
-            finalText = newText + "_" + String(i)
+            finalText = filterText + "_" + String(i)
         }
     }
     return finalText
