@@ -1,8 +1,9 @@
 let modData = {
-    items: []
-}
-let temporaryItemData = {}
-let existingIdentifiers = []
+    items: [],
+    blocks: []
+};
+let temporaryItemData = {};
+let existingIdentifiers = [];
 (async () => {
     if (document.getElementById("modTexturePreview").complete) {
         modData.image = await blobOfImg(document.getElementById("modTexturePreview"))
@@ -32,11 +33,11 @@ function promptTexture() {
 
             ctx.fillStyle = document.getElementById("textureColor").value;
             ctx.fillRect(x, y, 1, 1);
-        }
+        };
 
         const mouseUp = (e) => {
             drawing = false
-        }
+        };
 
         const mouseMove = (e) => {
             if (drawing) {
@@ -51,7 +52,7 @@ function promptTexture() {
                 ctx.fillStyle = document.getElementById("textureColor").value;
                 ctx.fillRect(x, y, 1, 1);
             }
-        }
+        };
 
         textureCanvasE.addEventListener("mousedown", mouseDown);
 
@@ -59,7 +60,7 @@ function promptTexture() {
 
         textureCanvasE.addEventListener("mouseleave", mouseUp);
 
-        textureCanvasE.addEventListener("mousemove", mouseMove)
+        textureCanvasE.addEventListener("mousemove", mouseMove);
 
         document.getElementById("textureEditor").hidden = false;
 
@@ -72,7 +73,7 @@ function promptTexture() {
             textureCanvasE.toBlob(function (blob) {
                 resolve(blob)
             }, 'image/png');
-        })
+        });
     });
 }
 
@@ -152,6 +153,9 @@ document.getElementById("downloadMod").addEventListener("click", async () => {
     let item_texture = {
         texture_data: {}
     }
+    let block_texture = {
+        texture_data: {}
+    }
     let zip = new JSZip();
     const bpUUID = crypto.randomUUID();
     const rpUUID = crypto.randomUUID();
@@ -227,7 +231,107 @@ document.getElementById("downloadMod").addEventListener("click", async () => {
         zip.file("RP/textures/items/" + newItemIdentifier + ".png", element.image)
         lang = lang + `item.${modIdentifier}:${newItemIdentifier}=${element.name}\n`
     });
+    modData.blocks.forEach(element => {
+        const newItemIdentifier = createNewIdentifier(element.name)
+        existingIdentifiers.push(newItemIdentifier)
+        zip.file("BP/blocks/" + newItemIdentifier + ".json", JSON.stringify({
+            format_version: "1.26.0",
+            "minecraft:block": {
+                description: {
+                    identifier: modIdentifier + ":" + newItemIdentifier,
+                    menu_category: {
+                        category: "construction"
+                    }
+                },
+                components: {
+                    "minecraft:geometry": "minecraft:geometry.full_block",
+                    "minecraft:material_instances": {
+                        "*": {
+                            texture: modIdentifier + ":" + newItemIdentifier
+                        }
+                    }
+                }
+            }
+        }))
+        block_texture.texture_data[modIdentifier + ":" + newItemIdentifier] = {
+            textures: "textures/blocks/" + newItemIdentifier
+        }
+        zip.file("RP/textures/blocks/" + newItemIdentifier + ".png", element.image)
+        lang = lang + `tile.${modIdentifier}:${newItemIdentifier}.name=${element.name}\n`
+        if (element.isOre) {
+            zip.file("BP/features/" + newItemIdentifier + "_ore_feature.json", JSON.stringify(
+                {
+                    format_version: "1.17.0",
+                    "minecraft:ore_feature": {
+                        description: {
+                            identifier: modIdentifier + ":" + newItemIdentifier + "_ore_feature"
+                        },
+                        count: element.oreClusterSize,
+                        replace_rules: [
+                            {
+                                places_block: modIdentifier + ":" + newItemIdentifier,
+                                may_replace: ["minecraft:stone"]
+                            },
+                            {
+                                places_block: modIdentifier + ":" + newItemIdentifier,
+                                may_replace: ["minecraft:deepslate"]
+                            }
+                        ]
+                    }
+                }
+            ))
+            zip.file("BP/feature_rules/overworld_underground_" + newItemIdentifier + "_ore_feature.json", JSON.stringify({
+                format_version: "1.13.0",
+                "minecraft:feature_rules": {
+                    description: {
+                        identifier: modIdentifier + ":overworld_underground_" + newItemIdentifier + "_ore_feature",
+                        places_feature: modIdentifier + ":" + newItemIdentifier + "_ore_feature"
+                    },
+                    conditions: {
+                        placement_pass: "underground_pass",
+                        "minecraft:biome_filter": [
+                            // Scatter the ore throughout the Overworld
+                            {
+                                any_of: [
+                                    {
+                                        test: "has_biome_tag",
+                                        operator: "==",
+                                        value: "overworld"
+                                    },
+                                    {
+                                        test: "has_biome_tag",
+                                        operator: "==",
+                                        value: "overworld_generation"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    distribution: {
+                        iterations: 10, // Placement attempts of the cluster, not the ore blocks
+                        coordinate_eval_order: "zyx",
+                        x: {
+                            distribution: "uniform",
+                            extent: [0, 16]
+                        },
+                        y: {
+                            distribution: "uniform", // You can use "triangle" to make ores more common in the middle of the extent
+                            extent: [
+                                0, // Minimum y level for the ore to generate
+                                62 // Maximum y level for the ore to generate
+                            ]
+                        },
+                        z: {
+                            distribution: "uniform",
+                            extent: [0, 16]
+                        }
+                    }
+                }
+            }))
+        }
+    });
     zip.file("RP/textures/item_texture.json", JSON.stringify(item_texture))
+    zip.file("RP/textures/terrain_texture.json", JSON.stringify(block_texture))
     zip.file("RP/texts/en_US.lang", lang)
     zip.file("RP/pack_icon.png", modData.image)
     zip.file("BP/pack_icon.png", modData.image)
@@ -246,11 +350,11 @@ document.getElementById("downloadMod").addEventListener("click", async () => {
     await writable.write(generatedBlob);
     await writable.close();
 
-})
+});
 
 document.getElementById("addElement").addEventListener("click", () => {
     document.getElementById("elementList").hidden = !document.getElementById("elementList").hidden
-})
+});
 
 document.getElementById("addItem").addEventListener("click", async () => {
     document.getElementById("elementList").hidden = true
@@ -260,7 +364,7 @@ document.getElementById("addItem").addEventListener("click", async () => {
     document.getElementById("itemTexturePreview").src = "./images/missingTexture.png"
     temporaryItemData.image = await blobOfImg(document.getElementById("itemTexturePreview"))
     document.getElementById("itemName").value = "Item"
-})
+});
 
 document.getElementById("itemTexturePreview").addEventListener("click", async () => {
     document.getElementById("itemEditor").hidden = true
@@ -272,23 +376,61 @@ document.getElementById("itemTexturePreview").addEventListener("click", async ()
     document.getElementById("itemTexturePreview").onload = () => {
         URL.revokeObjectURL(objectURL);
     }
-})
+});
 
 document.getElementById("saveItem").addEventListener("click", () => {
     temporaryItemData.name = document.getElementById("itemName").value
     modData.items.push(temporaryItemData);
     temporaryItemData = {}
     document.getElementById("itemEditor").hidden = true
-})
+});
 
 document.getElementById("modTexturePreview").addEventListener("click", async () => {
     document.getElementById("setup").hidden = true
     const newImg = await promptTexture()
-    temporaryItemData.image = newImg
+    modData.image = newImg
     document.getElementById("setup").hidden = false
     const objectURL = URL.createObjectURL(newImg);
     document.getElementById("modTexturePreview").src = objectURL
     document.getElementById("modTexturePreview").onload = () => {
         URL.revokeObjectURL(objectURL);
     }
+});
+
+document.getElementById("addBlock").addEventListener("click", async () => {
+    document.getElementById("elementList").hidden = true
+    document.getElementById("oreInfo").hidden = true
+    document.getElementById("blockEditor").hidden = false
+    temporaryItemData = {}
+    temporaryItemData.name = "Block"
+    document.getElementById("blockTexturePreview").src = "./images/missingTexture.png"
+    temporaryItemData.image = await blobOfImg(document.getElementById("itemTexturePreview"))
+    document.getElementById("blockName").value = "Block"
+    document.getElementById("isBlockOre").checked = false
+    document.getElementById("oreClusterSize").value = 8
+});
+
+document.getElementById("blockTexturePreview").addEventListener("click", async () => {
+    document.getElementById("blockEditor").hidden = true
+    const newImg = await promptTexture()
+    temporaryItemData.image = newImg
+    document.getElementById("blockEditor").hidden = false
+    const objectURL = URL.createObjectURL(newImg);
+    document.getElementById("blockTexturePreview").src = objectURL
+    document.getElementById("blockTexturePreview").onload = () => {
+        URL.revokeObjectURL(objectURL);
+    }
+});
+
+document.getElementById("saveBlock").addEventListener("click", () => {
+    temporaryItemData.name = document.getElementById("blockName").value
+    temporaryItemData.isOre = document.getElementById("isBlockOre").checked
+    temporaryItemData.oreClusterSize = Number(document.getElementById("oreClusterSize").value)
+    modData.blocks.push(temporaryItemData);
+    temporaryItemData = {}
+    document.getElementById("blockEditor").hidden = true
+});
+
+document.getElementById("isBlockOre").addEventListener("change", () => {
+    document.getElementById("oreInfo").hidden = !document.getElementById("isBlockOre").checked
 })

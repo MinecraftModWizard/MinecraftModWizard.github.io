@@ -141,3 +141,31 @@ body {
 #modTexturePreview:hover {
     cursor: pointer;
 }
+
+#blockTexturePreview {
+    width: 100px;
+    height: 100px;
+    image-rendering: pixelated;
+    background-color: rgb(148, 148, 148);
+    border-width: 2px;
+    border-color: black;
+    border-style: solid;
+}
+
+#blockTexturePreview:hover {
+    cursor: pointer;
+}
+
+#blockEditor {
+    background-color: rgb(90, 90, 90); 
+    width: calc(100vw - 80px);
+    height: calc(100vh - 80px);
+    left: 20px;
+    top: 20px;
+    position: absolute;
+    padding: 20px;
+}
+
+[hidden] {
+    display: none !important;
+}

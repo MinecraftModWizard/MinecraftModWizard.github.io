@@ -34,6 +34,10 @@
                 <img src="./images/item.png">
                 <p>Item</p>
             </div>
+            <div class="horizontal itemType" id="addBlock">
+                <img src="./images/block.png">
+                <p>Block</p>
+            </div>
         </div>
         <div id="textureEditor" hidden>
             <p>Make texture</p>
@@ -49,6 +53,24 @@
                 <input type="text" id="itemName">
             </div>
             <button id="saveItem">Save</button>
+        </div>
+        <div id="blockEditor" hidden>
+            <p>Make block</p>
+            <img src="./images/missingTexture.png" id="blockTexturePreview">
+            <div class="horizontal">
+                <p>Name:</p>
+                <input type="text" id="blockName">
+            </div>
+            <p>Componenents:</p>
+            <div class="horizontal">
+                <p>Is ore:</p>
+                <input type="checkbox" id="isBlockOre">
+            </div>
+            <div class="horizontal" id="oreInfo" hidden>
+                <p>Cluster size (not amount of blocks):</p>
+                <input type="number" id="oreClusterSize">
+            </div>
+            <button id="saveBlock">Save</button>
         </div>
         <script src="./main.js"></script>
     </body>
