@@ -169,3 +169,21 @@ body {
 [hidden] {
     display: none !important;
 }
+
+#codeEditor {
+    background-color: rgb(90, 90, 90); 
+    width: calc(100vw - 80px);
+    height: calc(100vh - 80px);
+    left: 20px;
+    top: 20px;
+    position: absolute;
+    padding: 20px;
+}
+
+#codeContainer {
+    width: 100%;
+    height: calc(100% - 100px);
+    top: 100px;
+    left: 0px;
+    position: absolute;
+}

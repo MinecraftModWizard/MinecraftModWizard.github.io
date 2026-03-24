@@ -14,6 +14,199 @@ let existingIdentifiers = [];
     }
 })();
 
+Blockly.defineBlocksWithJsonArray([
+    {
+        type: "events_whenBlockStepped",
+        message0: "when block stepped on",
+        message1: "%1",
+        colour: "#007e00",
+        args1: [
+            {
+                "type": "input_statement",
+                "name": "CODE"
+            }
+        ]
+    },
+    {
+        type: "events_whenBlockUsed",
+        message0: "when block used",
+        message1: "%1",
+        colour: "#007e00",
+        args1: [
+            {
+                "type": "input_statement",
+                "name": "CODE"
+            }
+        ]
+    },
+    {
+        type: "entity",
+        message0: "entity",
+        colour: "#003cff",
+        output: "entity"
+    },
+    {
+        type: "runCommand",
+        message0: "run command %1 on %2",
+        colour: "#003cff",
+        args0: [
+            {
+                "type": "input_value",
+                "name": "COMMAND",
+                "check": "String"
+            },
+            {
+                "type": "input_value",
+                "name": "ENTITY",
+                "check": "entity"
+            }
+        ],
+        previousStatement: null,
+        nextStatement: null,
+        inputsInline: true
+    },
+]);
+
+Blockly.JavaScript.forBlock['events_whenBlockStepped'] = function (block, generator) {
+    const code = generator.statementToCode(block, 'CODE');
+    return `
+featureUUID = crypto.randomUUID();
+code = code + \`
+features["\${featureUUID}"] = {
+    onStepOn(event) {
+        ${code}
+    }
+};
+
+system.beforeEvents.startup.subscribe(({ blockComponentRegistry }) => {
+    blockComponentRegistry.registerCustomComponent(
+        "\${modIdentifier + ":" + newItemIdentifier + featureUUID}",
+        features["\${featureUUID}"]
+    );
+});
+
+\`;
+
+components[modIdentifier + ":" + newItemIdentifier + featureUUID] = {};
+
+`
+};
+
+Blockly.JavaScript.forBlock['events_whenBlockUsed'] = function (block, generator) {
+    const code = generator.statementToCode(block, 'CODE');
+    return `
+featureUUID = crypto.randomUUID();
+code = code + \`
+features["\${featureUUID}"] = {
+    onPlayerInteract(event) {
+        ${code}
+    }
+};
+
+system.beforeEvents.startup.subscribe(({ blockComponentRegistry }) => {
+    blockComponentRegistry.registerCustomComponent(
+        "\${modIdentifier + ":" + newItemIdentifier + featureUUID}",
+        features["\${featureUUID}"]
+    );
+});
+
+\`;
+
+components[modIdentifier + ":" + newItemIdentifier + featureUUID] = {};
+
+`
+};
+
+
+Blockly.JavaScript.forBlock['entity'] = function (block, generator) {
+    return ["(function(){if(event.entity){return event.entity;}else{return event.player}})()", 99]
+};
+
+Blockly.JavaScript.forBlock['runCommand'] = function (block, generator) {
+    const entity = generator.valueToCode(block, 'ENTITY', 99);
+    const command = generator.valueToCode(block, 'COMMAND', 99);
+    return `${entity}.runCommand(${command});`
+};
+
+
+const toolbox = {
+    kind: "categoryToolbox",
+    contents: [
+        {
+            kind: "category",
+            name: "Events",
+            colour: "#007e00",
+            contents: [
+                {
+                    kind: 'block',
+                    type: 'events_whenBlockStepped'
+                },
+                {
+                    kind: 'block',
+                    type: 'events_whenBlockUsed'
+                },
+            ]
+        },
+        {
+            kind: "category",
+            name: "Entity",
+            colour: "#003cff",
+            contents: [
+                {
+                    kind: 'block',
+                    type: 'entity'
+                },
+                {
+                    kind: 'block',
+                    type: 'runCommand'
+                },
+            ]
+        },
+        {
+            kind: "category",
+            name: "Text",
+            colour: "#5ba58c",
+            contents: [
+                {
+                    kind: 'block',
+                    type: 'text'
+                },
+            ]
+        },
+    ]
+};
+
+Blockly.Theme.defineTheme('dark', {
+    name: 'dark',
+    base: Blockly.Themes.Classic,
+    componentStyles: {
+        workspaceBackgroundColour: '#1e1e1e',
+        toolboxBackgroundColour: '#333',
+        toolboxForegroundColour: '#fff',
+        flyoutBackgroundColour: '#252526',
+        flyoutForegroundColour: '#ccc',
+        flyoutOpacity: 1,
+        scrollbarColour: '#797979',
+        insertionMarkerColour: '#fff',
+        insertionMarkerOpacity: 0.3,
+        scrollbarOpacity: 0.4,
+        cursorColour: '#d0d0d0',
+    },
+    startHats: true
+});
+
+const workspace = Blockly.inject('codeContainer', {
+    theme: 'dark',
+    grid: {
+        spacing: 20,
+        length: 3,
+        colour: '#ccc',
+        snap: true
+    },
+    renderer: 'zelos',
+    toolbox: toolbox,
+    disableOrphans: true
+});
 function promptTexture() {
     return new Promise((resolve) => {
         const textureCanvasE = document.getElementById("textureCanvas");
@@ -75,6 +268,18 @@ function promptTexture() {
             }, 'image/png');
         });
     });
+}
+
+function promptCode(save) {
+    return new Promise(async (resolve) => {
+        document.getElementById("codeEditor").hidden = false;
+        Blockly.svgResize(workspace);
+        await Blockly.serialization.workspaces.load(save, workspace);
+        document.getElementById("saveCode").addEventListener("click", () => {
+            document.getElementById("codeEditor").hidden = true;
+            resolve(Blockly.JavaScript.workspaceToCode(workspace));
+        })
+    })
 }
 
 
@@ -160,6 +365,7 @@ document.getElementById("downloadMod").addEventListener("click", async () => {
     const bpUUID = crypto.randomUUID();
     const rpUUID = crypto.randomUUID();
     let lang = ""
+    let code = `import { world, system } from "@minecraft/server";\nlet features = {};\n`
     zip.file("BP/manifest.json", JSON.stringify({
         format_version: 3,
         header: {
@@ -169,15 +375,30 @@ document.getElementById("downloadMod").addEventListener("click", async () => {
             version: "1.0.0",
             min_engine_version: "1.26.0"
         },
-        modules: [{
-            type: "data",
-            uuid: crypto.randomUUID(),
-            version: "1.0.0"
-        }],
+        modules: [
+            {
+                type: "data",
+                uuid: crypto.randomUUID(),
+                version: "1.0.0"
+            },
+            {
+                uuid: crypto.randomUUID(),
+                version: "1.0.0",
+                type: "script",
+                language: "javascript",
+                entry: "scripts/code.js"
+            }
+        ],
         metadata: {
             authors: ["Minecraft Mod Wizard"],
             product_type: "addon"
-        }
+        },
+        dependencies: [
+            {
+                module_name: "@minecraft/server",
+                version: "2.3.0"
+            }
+        ]
     }));
 
     zip.file("RP/manifest.json", JSON.stringify({
@@ -232,26 +453,32 @@ document.getElementById("downloadMod").addEventListener("click", async () => {
         lang = lang + `item.${modIdentifier}:${newItemIdentifier}=${element.name}\n`
     });
     modData.blocks.forEach(element => {
+        let featureUUID = "";
         const newItemIdentifier = createNewIdentifier(element.name)
         existingIdentifiers.push(newItemIdentifier)
+        let components = {
+            "minecraft:geometry": "minecraft:geometry.full_block",
+            "minecraft:material_instances": {
+                "*": {
+                    texture: modIdentifier + ":" + newItemIdentifier,
+                    render_method: "blend",
+                }
+            }
+        }
+
+        if (element.code !== null) {
+            eval(element.code)
+        }
         zip.file("BP/blocks/" + newItemIdentifier + ".json", JSON.stringify({
             format_version: "1.26.0",
             "minecraft:block": {
                 description: {
                     identifier: modIdentifier + ":" + newItemIdentifier,
                     menu_category: {
-                        category: "construction"
+                        category: "construction",
                     }
                 },
-                components: {
-                    "minecraft:geometry": "minecraft:geometry.full_block",
-                    "minecraft:material_instances": {
-                        "*": {
-                            texture: modIdentifier + ":" + newItemIdentifier,
-                            render_method: "blend"
-                        }
-                    }
-                }
+                components: components
             }
         }))
         block_texture.texture_data[modIdentifier + ":" + newItemIdentifier] = {
@@ -336,6 +563,7 @@ document.getElementById("downloadMod").addEventListener("click", async () => {
     zip.file("RP/texts/en_US.lang", lang)
     zip.file("RP/pack_icon.png", modData.image)
     zip.file("BP/pack_icon.png", modData.image)
+    zip.file("BP/scripts/code.js", code)
     const generatedBlob = await zip.generateAsync({ type: "blob" });
     const handle = await window.showSaveFilePicker({
         suggestedName: "mod.mcaddon",
@@ -405,10 +633,12 @@ document.getElementById("addBlock").addEventListener("click", async () => {
     temporaryItemData = {}
     temporaryItemData.name = "Block"
     document.getElementById("blockTexturePreview").src = "./images/missingTexture.png"
-    temporaryItemData.image = await blobOfImg(document.getElementById("itemTexturePreview"))
+    temporaryItemData.image = await blobOfImg(document.getElementById("blockTexturePreview"))
     document.getElementById("blockName").value = "Block"
     document.getElementById("isBlockOre").checked = false
     document.getElementById("oreClusterSize").value = 8
+    temporaryItemData.code = null;
+    temporaryItemData.codeSave = {blocks: [], comments: []};
 });
 
 document.getElementById("blockTexturePreview").addEventListener("click", async () => {
@@ -435,3 +665,11 @@ document.getElementById("saveBlock").addEventListener("click", () => {
 document.getElementById("isBlockOre").addEventListener("change", () => {
     document.getElementById("oreInfo").hidden = !document.getElementById("isBlockOre").checked
 })
+
+document.getElementById("addBlockCode").addEventListener("click", async () => {
+    document.getElementById("blockEditor").hidden = true
+    const code = await promptCode(temporaryItemData.codeSave || {});
+    document.getElementById("blockEditor").hidden = false
+    temporaryItemData.code = code;
+    temporaryItemData.codeSave = Blockly.serialization.workspaces.save(workspace);
+});

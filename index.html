@@ -1,77 +1,95 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>Minecraft Mod Wizard</title>
-        <link rel="stylesheet" href="./main.css">
-        <link rel="icon" href="./images/favicon.png">
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    </head> 
-    <body>
-        <div id="setup">
-            <p>Welcome to Minecraft Mod Wizard!</p>
-            <p>Please enter info about the mod you want to make!</p>
-            <div class="horizontal">
-                <p style="padding-right: 10px;">Mod Name:</p>
-                <input type="text" id="modname">
-            </div>
-            <div class="horizontal">
-                <p style="padding-right: 10px;">Mod Description:</p>
-                <input type="text" id="moddesc">
-            </div>
-            <div class="horizontal" style="padding-top: 50px; padding-bottom: 50px;">
-                <p style="padding-right: 10px;">Mod Icon:</p>
-                <img src="./images/placeholderIcon.png" id="modTexturePreview">
-            </div>
-            <button id="makeModButton">Confirm</button>
+
+<head>
+    <title>Minecraft Mod Wizard</title>
+    <link rel="stylesheet" href="./main.css">
+    <link rel="icon" href="./images/favicon.png">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://unpkg.com/blockly/blockly_compressed.js"></script>
+    <script src="https://unpkg.com/blockly/blocks_compressed.js"></script>
+    <script src="https://unpkg.com/blockly/javascript_compressed.js"></script>
+    <script src="https://unpkg.com/blockly/msg/en.js"></script>
+</head>
+
+<body>
+    <div id="setup">
+        <p>Welcome to Minecraft Mod Wizard!</p>
+        <p>Please enter info about the mod you want to make!</p>
+        <div class="horizontal">
+            <p style="padding-right: 10px;">Mod Name:</p>
+            <input type="text" id="modname">
         </div>
-        <div id="optionBar" hidden>
-            <img src="./images/DownloadMod.png" id="downloadMod">
-            <img src="./images/AddElement.png" id="addElement">
+        <div class="horizontal">
+            <p style="padding-right: 10px;">Mod Description:</p>
+            <input type="text" id="moddesc">
         </div>
-        <div id="elementList" hidden>
-            <p>Add New Element</p>
-            <div class="horizontal itemType" id="addItem">
-                <img src="./images/item.png">
-                <p>Item</p>
-            </div>
-            <div class="horizontal itemType" id="addBlock">
-                <img src="./images/block.png">
-                <p>Block</p>
-            </div>
+        <div class="horizontal" style="padding-top: 50px; padding-bottom: 50px;">
+            <p style="padding-right: 10px;">Mod Icon:</p>
+            <img src="./images/placeholderIcon.png" id="modTexturePreview">
         </div>
-        <div id="textureEditor" hidden>
-            <p>Make texture</p>
-            <canvas id="textureCanvas" width="16" height="16"></canvas>
-            <input id="textureColor" type="color">
-            <button id="confirmTexture">Confirm</button>
+        <button id="makeModButton">Confirm</button>
+    </div>
+    <div id="optionBar" hidden>
+        <img src="./images/DownloadMod.png" id="downloadMod">
+        <img src="./images/AddElement.png" id="addElement">
+    </div>
+    <div id="elementList" hidden>
+        <p>Add New Element</p>
+        <div class="horizontal itemType" id="addItem">
+            <img src="./images/item.png">
+            <p>Item</p>
         </div>
-        <div id="itemEditor" hidden>
-            <p>Make item</p>
-            <img src="./images/missingTexture.png" id="itemTexturePreview">
-            <div class="horizontal">
-                <p>Name:</p>
-                <input type="text" id="itemName">
-            </div>
-            <button id="saveItem">Save</button>
+        <div class="horizontal itemType" id="addBlock">
+            <img src="./images/block.png">
+            <p>Block</p>
         </div>
-        <div id="blockEditor" hidden>
-            <p>Make block</p>
-            <img src="./images/missingTexture.png" id="blockTexturePreview">
-            <div class="horizontal">
-                <p>Name:</p>
-                <input type="text" id="blockName">
-            </div>
-            <p>Componenents:</p>
-            <div class="horizontal">
-                <p>Is ore:</p>
-                <input type="checkbox" id="isBlockOre">
-            </div>
-            <div class="horizontal" id="oreInfo" hidden>
-                <p>Cluster size (not amount of blocks):</p>
-                <input type="number" id="oreClusterSize">
-            </div>
+    </div>
+    <div id="textureEditor" hidden>
+        <p>Make texture</p>
+        <canvas id="textureCanvas" width="16" height="16"></canvas>
+        <input id="textureColor" type="color">
+        <button id="confirmTexture">Confirm</button>
+    </div>
+    <div id="itemEditor" hidden>
+        <p>Make item</p>
+        <img src="./images/missingTexture.png" id="itemTexturePreview">
+        <div class="horizontal">
+            <p>Name:</p>
+            <input type="text" id="itemName">
+        </div>
+        <button id="saveItem">Save</button>
+    </div>
+    <div id="blockEditor" hidden>
+        <p>Make block</p>
+        <img src="./images/missingTexture.png" id="blockTexturePreview">
+        <div class="horizontal">
+            <p>Name:</p>
+            <input type="text" id="blockName">
+        </div>
+        <p>Componenents:</p>
+        <div class="horizontal">
+            <p>Is ore:</p>
+            <input type="checkbox" id="isBlockOre">
+        </div>
+        <div class="horizontal" id="oreInfo" hidden>
+            <p>Cluster size (not amount of blocks):</p>
+            <input type="number" id="oreClusterSize">
+        </div>
+        <div class="horizontal">
+            <button id="addBlockCode" style="margin-right: 50px;">Functionality</button>
             <button id="saveBlock">Save</button>
         </div>
-        <script src="./main.js"></script>
-    </body>
+    </div>
+    <div id="codeEditor" hidden>
+        <div class="horizontal">
+            <p style="margin-right: 20px;">Make code</p>
+            <button id="saveCode">Save</button>
+        </div>
+        <div id="codeContainer"></div>
+    </div>
+    <script src="./main.js"></script>
+    <script src="./blocklySetup.js"></script>
+</body>
+
 </html>
