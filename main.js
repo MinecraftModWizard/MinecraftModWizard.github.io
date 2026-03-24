@@ -274,7 +274,11 @@ function promptCode(save) {
     return new Promise(async (resolve) => {
         document.getElementById("codeEditor").hidden = false;
         Blockly.svgResize(workspace);
-        await Blockly.serialization.workspaces.load(save, workspace);
+        if (save === null) {
+            workspace.clear();
+        } else {
+            await Blockly.serialization.workspaces.load(save, workspace);
+        }
         document.getElementById("saveCode").addEventListener("click", () => {
             document.getElementById("codeEditor").hidden = true;
             resolve(Blockly.JavaScript.workspaceToCode(workspace));
@@ -638,7 +642,7 @@ document.getElementById("addBlock").addEventListener("click", async () => {
     document.getElementById("isBlockOre").checked = false
     document.getElementById("oreClusterSize").value = 8
     temporaryItemData.code = null;
-    temporaryItemData.codeSave = {blocks: [], comments: []};
+    temporaryItemData.codeSave = null;
 });
 
 document.getElementById("blockTexturePreview").addEventListener("click", async () => {
