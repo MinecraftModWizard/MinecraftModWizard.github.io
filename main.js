@@ -95,6 +95,194 @@ Blockly.defineBlocksWithJsonArray([
         nextStatement: null,
         inputsInline: true
     },
+    {
+        type: "damageEntity",
+        message0: "damage %1 by %2 half hearts",
+        colour: "#003cff",
+        args0: [
+            {
+                "type": "input_value",
+                "name": "ENTITY",
+                "check": "entity"
+            },
+            {
+                "type": "input_value",
+                "name": "HEALTH",
+                "check": "Number"
+            }
+        ],
+        previousStatement: null,
+        nextStatement: null,
+        inputsInline: true
+    },
+    {
+        type: "applyForce",
+        message0: "apply force with X %1 Y %2 Z %3 to %4",
+        colour: "#003cff",
+        args0: [
+            {
+                "type": "input_value",
+                "name": "X",
+                "check": "Number"
+            },
+            {
+                "type": "input_value",
+                "name": "Y",
+                "check": "Number"
+            },
+            {
+                "type": "input_value",
+                "name": "Z",
+                "check": "Number"
+            },
+            {
+                "type": "input_value",
+                "name": "ENTITY",
+                "check": "entity"
+            }
+        ],
+        previousStatement: null,
+        nextStatement: null,
+        inputsInline: true
+    },
+    {
+        type: "textShadow",
+        message0: "%1",
+        args0: [
+            {
+                "type": "field_input",
+                "name": "TEXT",
+                "text": ""
+            },
+        ],
+        colour: "#ffffff",
+        output: "String"
+    },
+    {
+        type: "getStandingBlock",
+        message0: "get block that %1 is standing on",
+        args0: [
+            {
+                "type": "input_value",
+                "name": "ENTITY",
+                "check": "entity"
+            }
+        ],
+        colour: "#ff9900",
+        output: "block"
+    },
+    {
+        type: "blockX",
+        message0: "x of %1",
+        args0: [
+            {
+                "type": "input_value",
+                "name": "BLOCK",
+                "check": "block"
+            }
+        ],
+        colour: "#ff9900",
+        output: "Number"
+    },
+    {
+        type: "blockY",
+        message0: "y of %1",
+        args0: [
+            {
+                "type": "input_value",
+                "name": "BLOCK",
+                "check": "block"
+            }
+        ],
+        colour: "#ff9900",
+        output: "Number"
+    },
+    {
+        type: "blockZ",
+        message0: "z of %1",
+        args0: [
+            {
+                "type": "input_value",
+                "name": "BLOCK",
+                "check": "block"
+            }
+        ],
+        colour: "#ff9900",
+        output: "Number"
+    },
+    {
+        type: "setBlock",
+        message0: "set block at X %1 Y %2 Z %3 to %4",
+        args0: [
+            {
+                "type": "input_value",
+                "name": "X",
+                "check": "Number"
+            },
+            {
+                "type": "input_value",
+                "name": "Y",
+                "check": "Number"
+            },
+            {
+                "type": "input_value",
+                "name": "Z",
+                "check": "Number"
+            },
+            {
+                "type": "input_value",
+                "name": "BLOCK",
+                "check": "String"
+            }
+        ],
+        colour: "#ff9900",
+        previousStatement: null,
+        nextStatement: null,
+        inputsInline: true
+    },
+    {
+        type: "setBlockType",
+        message0: "set type of %1 to %2",
+        args0: [
+            {
+                "type": "input_value",
+                "name": "BLOCK",
+                "check": "block"
+            },
+            {
+                "type": "input_value",
+                "name": "TYPE",
+                "check": "String"
+            }
+        ],
+        colour: "#ff9900",
+        previousStatement: null,
+        nextStatement: null,
+        inputsInline: true
+    },
+    {
+        type: "blockAt",
+        message0: "get block at X %1 Y %2 Z %3",
+        args0: [
+            {
+                "type": "input_value",
+                "name": "X",
+                "check": "Number"
+            },
+            {
+                "type": "input_value",
+                "name": "Y",
+                "check": "Number"
+            },
+            {
+                "type": "input_value",
+                "name": "Z",
+                "check": "Number"
+            },
+        ],
+        colour: "#ff9900",
+        output: "block"
+    },
 ]);
 
 Blockly.JavaScript.forBlock['events_whenBlockStepped'] = function (block, generator) {
@@ -106,7 +294,7 @@ features["\${featureUUID}"] = {
     onStepOn(event) {
         const defaultEntity = event.entity
         const sourceEntity = event.entity
-        ${code}
+       ${code}
     }
 };
 
@@ -133,7 +321,7 @@ features["\${featureUUID}"] = {
     onPlayerInteract(event) {
         const defaultEntity = event.player
         const sourceEntity = event.player
-        ${code}
+       ${code}
     }
 };
 
@@ -160,7 +348,7 @@ features["\${featureUUID}"] = {
     onUse(event) {
         const defaultEntity = event.source
         const sourceEntity = event.source
-        ${code}
+       ${code}
     }
 };
 
@@ -187,7 +375,7 @@ features["\${featureUUID}"] = {
     onHitEntity(event) {
         const defaultEntity = event.hitEntity
         const sourceEntity = event.attackingEntity
-        ${code}
+       ${code}
     }
 };
 
@@ -214,82 +402,107 @@ Blockly.JavaScript.forBlock['sourceentity'] = function (block, generator) {
     return ["sourceEntity", 99]
 };
 
+Blockly.JavaScript.forBlock['textShadow'] = function (block, generator) {
+    const text = block.getFieldValue('TEXT');
+    return [Blockly.JavaScript.quote_(text), 99]
+};
+
 Blockly.JavaScript.forBlock['runCommand'] = function (block, generator) {
     const entity = generator.valueToCode(block, 'ENTITY', 99);
     const command = generator.valueToCode(block, 'COMMAND', 99);
-    return `${entity}.runCommand(${command});`
+    return `${entity}.runCommand(${command});\n`
 };
 
+Blockly.JavaScript.forBlock['damageEntity'] = function (block, generator) {
+    const entity = generator.valueToCode(block, 'ENTITY', 99);
+    const hearts = generator.valueToCode(block, 'HEALTH', 99);
+    return `${entity}.applyDamage(${hearts});\n`
+};
 
-const blocktoolbox = {
-    kind: "categoryToolbox",
+Blockly.JavaScript.forBlock['applyForce'] = function (block, generator) {
+    const entity = generator.valueToCode(block, 'ENTITY', 99);
+    const x = generator.valueToCode(block, 'X', 99);
+    const y = generator.valueToCode(block, 'Y', 99);
+    const z = generator.valueToCode(block, 'Z', 99);
+    return `${entity}.applyKnockback({x: ${x}, z: ${z}}, ${y});\n`
+};
+
+Blockly.JavaScript.forBlock['getStandingBlock'] = function (block, generator) {
+    const entity = generator.valueToCode(block, 'ENTITY', 99);
+    return [`${entity}.getBlockStandingOn()`, 99]
+};
+
+Blockly.JavaScript.forBlock['blockX'] = function (block, generator) {
+    const mblock = generator.valueToCode(block, 'BLOCK', 99);
+    return [`${mblock}.x`, 99]
+};
+
+Blockly.JavaScript.forBlock['blockY'] = function (block, generator) {
+    const mblock = generator.valueToCode(block, 'BLOCK', 99);
+    return [`${mblock}.y`, 99]
+};
+
+Blockly.JavaScript.forBlock['blockZ'] = function (block, generator) {
+    const mblock = generator.valueToCode(block, 'BLOCK', 99);
+    return [`${mblock}.z`, 99]
+};
+
+Blockly.JavaScript.forBlock['setBlock'] = function (block, generator) {
+    const mblock = generator.valueToCode(block, 'BLOCK', 99);
+    const x = generator.valueToCode(block, 'X', 99);
+    const y = generator.valueToCode(block, 'Y', 99);
+    const z = generator.valueToCode(block, 'Z', 99);
+    return `world.getDimension("overworld").setBlockType({x: ${x}, y: ${y}, z: ${z}}, ${mblock})\n`
+};
+
+Blockly.JavaScript.forBlock['setBlockType'] = function (block, generator) {
+    const mblock = generator.valueToCode(block, 'BLOCK', 99);
+    const type = generator.valueToCode(block, 'TYPE', 99);
+    return `${mblock}.setType(${type})\n`
+};
+
+Blockly.JavaScript.forBlock['blockAt'] = function (block, generator) {
+    const x = generator.valueToCode(block, 'X', 99);
+    const y = generator.valueToCode(block, 'Y', 99);
+    const z = generator.valueToCode(block, 'Z', 99);
+    return [`world.getDimension("overworld").getBlock({x: ${x}}, y: ${y}, z: ${z}})`, 99]
+};
+
+const blockEvents = {
+    kind: "category",
+    name: "Events",
+    colour: "#007e00",
     contents: [
         {
-            kind: "category",
-            name: "Events",
-            colour: "#007e00",
-            contents: [
-                {
-                    kind: 'block',
-                    type: 'events_whenBlockStepped'
-                },
-                {
-                    kind: 'block',
-                    type: 'events_whenBlockUsed'
-                },
-            ]
+            kind: 'block',
+            type: 'events_whenBlockStepped'
         },
         {
-            kind: "category",
-            name: "Entity",
-            colour: "#003cff",
-            contents: [
-                {
-                    kind: 'block',
-                    type: 'entity'
-                },
-                {
-                    kind: 'block',
-                    type: 'sourceentity'
-                },
-                {
-                    kind: 'block',
-                    type: 'runCommand'
-                },
-            ]
-        },
-        {
-            kind: "category",
-            name: "Text",
-            colour: "#5ba58c",
-            contents: [
-                {
-                    kind: 'block',
-                    type: 'text'
-                },
-            ]
+            kind: 'block',
+            type: 'events_whenBlockUsed'
         },
     ]
-};
+}
 
-const itemtoolbox = {
-    kind: "categoryToolbox",
+const itemEvents = {
+    kind: "category",
+    name: "Events",
+    colour: "#007e00",
     contents: [
         {
-            kind: "category",
-            name: "Events",
-            colour: "#007e00",
-            contents: [
-                {
-                    kind: 'block',
-                    type: 'events_whenItemUsed'
-                },
-                {
-                    kind: 'block',
-                    type: 'events_whenItemHitEntity'
-                }
-            ]
+            kind: 'block',
+            type: 'events_whenItemUsed'
         },
+        {
+            kind: 'block',
+            type: 'events_whenItemHitEntity'
+        }
+    ]
+}
+
+const toolbox = {
+    kind: "categoryToolbox",
+    contents: [
         {
             kind: "category",
             name: "Entity",
@@ -307,6 +520,47 @@ const itemtoolbox = {
                     kind: 'block',
                     type: 'runCommand'
                 },
+                {
+                    kind: 'block',
+                    type: 'damageEntity',
+                    inputs: {
+                        HEALTH: {
+                            shadow: {
+                                type: "math_number",
+                                fields: { "NUM": 7 }
+                            }
+                        },
+                    }
+                },
+                {
+                    kind: 'block',
+                    type: 'applyForce',
+                    inputs: {
+                        X: {
+                            shadow: {
+                                type: "math_number",
+                                fields: { "NUM": 0 }
+                            }
+                        },
+                        Y: {
+                            shadow: {
+                                type: "math_number",
+                                fields: { "NUM": 0 }
+                            }
+                        },
+                        Z: {
+                            shadow: {
+                                type: "math_number",
+                                fields: { "NUM": 0 }
+                            }
+                        },
+                    },
+
+                },
+                {
+                    kind: 'block',
+                    type: 'getStandingBlock'
+                },
             ]
         },
         {
@@ -316,7 +570,92 @@ const itemtoolbox = {
             contents: [
                 {
                     kind: 'block',
-                    type: 'text'
+                    type: 'textShadow'
+                },
+            ]
+        },
+        {
+            kind: "category",
+            name: "Blocks",
+            colour: "#ff9900",
+            contents: [
+                {
+                    kind: 'block',
+                    type: 'blockX'
+                },
+                {
+                    kind: 'block',
+                    type: 'blockY'
+                },
+                {
+                    kind: 'block',
+                    type: 'blockZ'
+                },
+                {
+                    kind: 'block',
+                    type: 'setBlock',
+                    inputs: {
+                        X: {
+                            shadow: {
+                                type: "math_number",
+                                fields: { "NUM": 0 }
+                            }
+                        },
+                        Y: {
+                            shadow: {
+                                type: "math_number",
+                                fields: { "NUM": 0 }
+                            }
+                        },
+                        Z: {
+                            shadow: {
+                                type: "math_number",
+                                fields: { "NUM": 0 }
+                            }
+                        },
+                        BLOCK: {
+                            shadow: {
+                                type: "textShadow",
+                                fields: {"TEXT": "minecraft:stone" }
+                            }
+                        },
+                    },
+                },
+                {
+                    kind: 'block',
+                    type: 'setBlockType',
+                    inputs: {
+                        TYPE: {
+                            shadow: {
+                                type: "textShadow",
+                                fields: { "text": "minecraft:stone" }
+                            }
+                        },
+                    }
+                },
+                {
+                    kind: 'block',
+                    type: 'blockAt',
+                    inputs: {
+                        X: {
+                            shadow: {
+                                type: "math_number",
+                                fields: { "NUM": 0 }
+                            }
+                        },
+                        Y: {
+                            shadow: {
+                                type: "math_number",
+                                fields: { "NUM": 0 }
+                            }
+                        },
+                        Z: {
+                            shadow: {
+                                type: "math_number",
+                                fields: { "NUM": 0 }
+                            }
+                        },
+                    },
                 },
             ]
         },
@@ -351,7 +690,7 @@ const workspace = Blockly.inject('codeContainer', {
         snap: true
     },
     renderer: 'zelos',
-    toolbox: blocktoolbox,
+    toolbox: toolbox,
     disableOrphans: true
 });
 function promptTexture() {
@@ -420,10 +759,13 @@ function promptTexture() {
 function promptCode(save, isItem) {
     return new Promise(async (resolve) => {
         document.getElementById("codeEditor").hidden = false;
+        const newToolbox = JSON.parse(JSON.stringify(toolbox));
         if (isItem) {
-            workspace.updateToolbox(itemtoolbox)
+            newToolbox.contents.unshift(itemEvents);
+            workspace.updateToolbox(newToolbox);
         } else {
-            workspace.updateToolbox(blocktoolbox)
+            newToolbox.contents.unshift(blockEvents);
+            workspace.updateToolbox(newToolbox);
         }
         Blockly.svgResize(workspace);
         if (save === null) {
@@ -842,7 +1184,7 @@ document.getElementById("addBlockCode").addEventListener("click", async () => {
 
 document.getElementById("addItemCode").addEventListener("click", async () => {
     document.getElementById("itemEditor").hidden = true
-    const code = await promptCode(temporaryItemData.codeSave || {},true);
+    const code = await promptCode(temporaryItemData.codeSave || {}, true);
     document.getElementById("itemEditor").hidden = false
     temporaryItemData.code = code;
     temporaryItemData.codeSave = Blockly.serialization.workspaces.save(workspace);
