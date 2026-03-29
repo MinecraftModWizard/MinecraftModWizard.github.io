@@ -281,7 +281,8 @@ Blockly.defineBlocksWithJsonArray([
             },
         ],
         colour: "#ff9900",
-        output: "block"
+        output: "block",
+        inputsInline: true
     },
 ]);
 
@@ -452,7 +453,7 @@ Blockly.JavaScript.forBlock['setBlock'] = function (block, generator) {
     const x = generator.valueToCode(block, 'X', 99);
     const y = generator.valueToCode(block, 'Y', 99);
     const z = generator.valueToCode(block, 'Z', 99);
-    return `world.getDimension("overworld").setBlockType({x: ${x}, y: ${y}, z: ${z}}, ${mblock})\n`
+    return `world.getDimension("overworld").getBlock({x: ${x}}, y: ${y}, z: ${z}}).setType(${mblock})\n`
 };
 
 Blockly.JavaScript.forBlock['setBlockType'] = function (block, generator) {
@@ -628,7 +629,7 @@ const toolbox = {
                         TYPE: {
                             shadow: {
                                 type: "textShadow",
-                                fields: { "text": "minecraft:stone" }
+                                fields: { "TEXT": "minecraft:stone" }
                             }
                         },
                     }
