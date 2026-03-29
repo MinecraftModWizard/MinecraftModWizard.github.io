@@ -453,13 +453,13 @@ Blockly.JavaScript.forBlock['setBlock'] = function (block, generator) {
     const x = generator.valueToCode(block, 'X', 99);
     const y = generator.valueToCode(block, 'Y', 99);
     const z = generator.valueToCode(block, 'Z', 99);
-    return `world.getDimension("overworld").getBlock({x: ${x}}, y: ${y}, z: ${z}}).setType(${mblock})\n`
+    return `world.getDimension("overworld").getBlock({x: ${x}}, y: ${y}, z: ${z}}).setType(${mblock});\n`
 };
 
 Blockly.JavaScript.forBlock['setBlockType'] = function (block, generator) {
     const mblock = generator.valueToCode(block, 'BLOCK', 99);
     const type = generator.valueToCode(block, 'TYPE', 99);
-    return `${mblock}.setType(${type})\n`
+    return `${mblock}.setType(${type});\n`
 };
 
 Blockly.JavaScript.forBlock['blockAt'] = function (block, generator) {
