@@ -4,6 +4,7 @@ let modData = {
 };
 let temporaryItemData = {};
 let existingIdentifiers = [];
+let firstTime = false;
 (async () => {
     if (document.getElementById("modTexturePreview").complete) {
         modData.image = await blobOfImg(document.getElementById("modTexturePreview"))
@@ -284,6 +285,93 @@ Blockly.defineBlocksWithJsonArray([
         output: "block",
         inputsInline: true
     },
+    {
+        type: "block",
+        message0: "block",
+        colour: "#ff9900",
+        output: "block"
+    },
+    {
+        type: "getGamemode",
+        message0: "get gamemode %1 is in",
+        args0: [
+            {
+                "type": "input_value",
+                "name": "PLAYER",
+                "check": "entity"
+            },
+        ],
+        colour: "#0077ff",
+        output: "String",
+        inputsInline: true
+    },
+    {
+        type: "joinText",
+        message0: "join %1 %2",
+        args0: [
+            {
+                "type": "input_value",
+                "name": "A",
+                "check": "String"
+            },
+            {
+                "type": "input_value",
+                "name": "B",
+                "check": "String"
+            },
+        ],
+        colour: "#5ba58c",
+        output: "String",
+        inputsInline: true
+    },
+    {
+        type: "playSound",
+        message0: "play sound %1 at X %2 Y %3 Z %4 in dimension %5",
+        args0: [
+            {
+                "type": "input_value",
+                "name": "SOUND",
+                "check": "String"
+            },
+            {
+                "type": "input_value",
+                "name": "X",
+                "check": "Number"
+            },
+            {
+                "type": "input_value",
+                "name": "Y",
+                "check": "Number"
+            },
+            {
+                "type": "input_value",
+                "name": "Z",
+                "check": "Number"
+            },
+            {
+                "type": "field_dropdown",
+                "name": "DIMENSION",
+                "options": [
+                    [
+                        "Overworld",
+                        "OVERWORLD"
+                    ],
+                    [
+                        "Nether",
+                        "NETHER"
+                    ],
+                    [
+                        "The End",
+                        "END"
+                    ]
+                ]
+            },
+        ],
+        colour: "#640000",
+        previousStatement: null,
+        nextStatement: null,
+        inputsInline: true
+    },
 ]);
 
 Blockly.JavaScript.forBlock['events_whenBlockStepped'] = function (block, generator) {
@@ -293,9 +381,10 @@ featureUUID = crypto.randomUUID();
 code = code + \`
 features["\${featureUUID}"] = {
     onStepOn(event) {
-        const defaultEntity = event.entity
-        const sourceEntity = event.entity
-       ${code}
+        const defaultEntity = event.entity;
+        const sourceEntity = event.entity;
+        const defaultBlock = event.block;
+        ${code}
     }
 };
 
@@ -320,9 +409,10 @@ featureUUID = crypto.randomUUID();
 code = code + \`
 features["\${featureUUID}"] = {
     onPlayerInteract(event) {
-        const defaultEntity = event.player
-        const sourceEntity = event.player
-       ${code}
+        const defaultEntity = event.player;
+        const sourceEntity = event.player;
+        const defaultBlock = event.block;
+        ${code}
     }
 };
 
@@ -347,9 +437,9 @@ featureUUID = crypto.randomUUID();
 code = code + \`
 features["\${featureUUID}"] = {
     onUse(event) {
-        const defaultEntity = event.source
-        const sourceEntity = event.source
-       ${code}
+        const defaultEntity = event.source;
+        const sourceEntity = event.source;
+        ${code}
     }
 };
 
@@ -374,9 +464,9 @@ featureUUID = crypto.randomUUID();
 code = code + \`
 features["\${featureUUID}"] = {
     onHitEntity(event) {
-        const defaultEntity = event.hitEntity
-        const sourceEntity = event.attackingEntity
-       ${code}
+        const defaultEntity = event.hitEntity;
+        const sourceEntity = event.attackingEntity;
+        ${code}
     }
 };
 
@@ -453,7 +543,7 @@ Blockly.JavaScript.forBlock['setBlock'] = function (block, generator) {
     const x = generator.valueToCode(block, 'X', 99);
     const y = generator.valueToCode(block, 'Y', 99);
     const z = generator.valueToCode(block, 'Z', 99);
-    return `world.getDimension("overworld").getBlock({x: ${x}}, y: ${y}, z: ${z}}).setType(${mblock});\n`
+    return `world.getDimension("overworld").getBlock({x: ${x}, y: ${y}, z: ${z}}).setType(${mblock});\n`
 };
 
 Blockly.JavaScript.forBlock['setBlockType'] = function (block, generator) {
@@ -466,7 +556,36 @@ Blockly.JavaScript.forBlock['blockAt'] = function (block, generator) {
     const x = generator.valueToCode(block, 'X', 99);
     const y = generator.valueToCode(block, 'Y', 99);
     const z = generator.valueToCode(block, 'Z', 99);
-    return [`world.getDimension("overworld").getBlock({x: ${x}}, y: ${y}, z: ${z}})`, 99]
+    return [`world.getDimension("overworld").getBlock({x: ${x}, y: ${y}, z: ${z}})`, 99]
+};
+
+Blockly.JavaScript.forBlock['getGamemode'] = function (block, generator) {
+    const player = generator.valueToCode(block, 'PLAYER', 99);
+    return [`${player}.getGameMode()`, 99]
+};
+
+Blockly.JavaScript.forBlock['joinText'] = function (block, generator) {
+    const a = generator.valueToCode(block, 'A', 99);
+    const b = generator.valueToCode(block, 'B', 99);
+    return [`String(${a}) + String(${b})`, 99]
+};
+
+Blockly.JavaScript.forBlock['block'] = function (block, generator) {
+    return ["defaultBlock", 99]
+};
+
+Blockly.JavaScript.forBlock['playSound'] = function (block, generator) {
+    const sound = generator.valueToCode(block, 'SOUND', 99);
+    const x = generator.valueToCode(block, 'X', 99);
+    const y = generator.valueToCode(block, 'Y', 99);
+    const z = generator.valueToCode(block, 'Z', 99);
+    const dimensions = {
+        OVERWORLD: 'overworld',
+        NETHER: 'nether',
+        END: 'the_end',
+    };
+    const dimension = dimensions[block.getFieldValue('DIMENSION')];
+    return `world.getDimension(${generator.quote_(dimension)}).playSound(${sound}, {x: ${x}, z: ${z}, y: ${y}});\n`
 };
 
 const blockEvents = {
@@ -519,7 +638,14 @@ const toolbox = {
                 },
                 {
                     kind: 'block',
-                    type: 'runCommand'
+                    type: 'runCommand',
+                    inputs: {
+                        COMMAND: {
+                            shadow: {
+                                type: "textShadow"
+                            }
+                        },
+                    }
                 },
                 {
                     kind: 'block',
@@ -566,12 +692,40 @@ const toolbox = {
         },
         {
             kind: "category",
+            name: "Player",
+            colour: "#0077ff",
+            contents: [
+                {
+                    kind: 'block',
+                    type: 'getGamemode'
+                },
+            ]
+        },
+        {
+            kind: "category",
             name: "Text",
             colour: "#5ba58c",
             contents: [
                 {
                     kind: 'block',
                     type: 'textShadow'
+                },
+                {
+                    kind: 'block',
+                    type: 'joinText',
+                    inputs: {
+                        A: {
+                            shadow: {
+                                type: "textShadow"
+                            }
+                        },
+                        B: {
+                            shadow: {
+                                type: "textShadow"
+                            }
+                        },
+                    },
+
                 },
             ]
         },
@@ -580,6 +734,10 @@ const toolbox = {
             name: "Blocks",
             colour: "#ff9900",
             contents: [
+                {
+                    kind: 'block',
+                    type: 'block'
+                },
                 {
                     kind: 'block',
                     type: 'blockX'
@@ -617,7 +775,7 @@ const toolbox = {
                         BLOCK: {
                             shadow: {
                                 type: "textShadow",
-                                fields: {"TEXT": "minecraft:stone" }
+                                fields: { "TEXT": "minecraft:stone" }
                             }
                         },
                     },
@@ -660,6 +818,43 @@ const toolbox = {
                 },
             ]
         },
+        {
+            kind: "category",
+            name: "World",
+            colour: "#640000",
+            contents: [
+                {
+                    kind: 'block',
+                    type: 'playSound',
+                    inputs: {
+                        X: {
+                            shadow: {
+                                type: "math_number",
+                                fields: { "NUM": 0 }
+                            }
+                        },
+                        Y: {
+                            shadow: {
+                                type: "math_number",
+                                fields: { "NUM": 0 }
+                            }
+                        },
+                        Z: {
+                            shadow: {
+                                type: "math_number",
+                                fields: { "NUM": 0 }
+                            }
+                        },
+                        SOUND: {
+                            shadow: {
+                                type: "textShadow",
+                                fields: { "TEXT": "dig.stone" }
+                            }
+                        },
+                    },
+                },
+            ]
+        }
     ]
 };
 
@@ -698,7 +893,11 @@ function promptTexture() {
     return new Promise((resolve) => {
         const textureCanvasE = document.getElementById("textureCanvas");
         const ctx = textureCanvasE.getContext("2d");
+        ctx.imageSmoothingEnabled = false;
         let drawing = false;
+        let tool = "brush";
+        document.getElementById("textureBrush").style.borderStyle = "solid";
+        document.getElementById("textureEraser").style.borderStyle = "hidden";
         ctx.clearRect(0, 0, 16, 16)
 
         const mouseDown = (e) => {
@@ -711,8 +910,12 @@ function promptTexture() {
             const x = Math.floor((e.clientX - rect.left) * scaleX);
             const y = Math.floor((e.clientY - rect.top) * scaleY);
 
-            ctx.fillStyle = document.getElementById("textureColor").value;
-            ctx.fillRect(x, y, 1, 1);
+            if (tool == "brush") {
+                ctx.fillStyle = document.getElementById("textureColor").value;
+                ctx.fillRect(x, y, 1, 1);
+            } else {
+                ctx.clearRect(x, y, 1, 1);
+            }
         };
 
         const mouseUp = (e) => {
@@ -729,27 +932,41 @@ function promptTexture() {
                 const x = Math.floor((e.clientX - rect.left) * scaleX);
                 const y = Math.floor((e.clientY - rect.top) * scaleY);
 
-                ctx.fillStyle = document.getElementById("textureColor").value;
-                ctx.fillRect(x, y, 1, 1);
+                if (tool == "brush") {
+                    ctx.fillStyle = document.getElementById("textureColor").value;
+                    ctx.fillRect(x, y, 1, 1);
+                } else {
+                    ctx.clearRect(x, y, 1, 1);
+                }
             }
         };
 
         textureCanvasE.addEventListener("mousedown", mouseDown);
 
-        textureCanvasE.addEventListener("mouseup", mouseUp);
-
-        textureCanvasE.addEventListener("mouseleave", mouseUp);
+        document.addEventListener("mouseup", mouseUp);
 
         textureCanvasE.addEventListener("mousemove", mouseMove);
 
         document.getElementById("textureEditor").hidden = false;
 
+
+        document.getElementById("textureBrush").addEventListener("click", function () {
+            tool = "brush";
+            document.getElementById("textureBrush").style.borderStyle = "solid";
+            document.getElementById("textureEraser").style.borderStyle = "hidden";
+        });
+
+        document.getElementById("textureEraser").addEventListener("click", function () {
+            tool = "eraser";
+            document.getElementById("textureBrush").style.borderStyle = "hidden";
+            document.getElementById("textureEraser").style.borderStyle = "solid";
+        });
+
         document.getElementById("confirmTexture").addEventListener("click", () => {
             document.getElementById("textureEditor").hidden = true;
             textureCanvasE.removeEventListener("mousedown", mouseDown);
-            textureCanvasE.removeEventListener("mouseup", mouseUp);
+            document.removeEventListener("mouseup", mouseUp);
             textureCanvasE.removeEventListener("mousemove", mouseMove);
-            textureCanvasE.removeEventListener("mouseleave", mouseUp);
             textureCanvasE.toBlob(function (blob) {
                 resolve(blob)
             }, 'image/png');
@@ -821,7 +1038,10 @@ document.getElementById("makeModButton").addEventListener("click", () => {
 });
 
 function createNewIdentifier(text) {
-    let newText = String(text)
+    let newText = String(text);
+    if (newText.length == 0) {
+        newText = String(crypto.randomUUID());
+    }
     const numbers = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
     newText = newText.replaceAll(" ", "_")
     if (numbers.includes(newText.charAt(0))) {
@@ -899,6 +1119,10 @@ document.getElementById("downloadMod").addEventListener("click", async () => {
             {
                 module_name: "@minecraft/server",
                 version: "2.3.0"
+            },
+            {
+                uuid: rpUUID,
+                version: "1.0.0"
             }
         ]
     }));
@@ -923,6 +1147,12 @@ document.getElementById("downloadMod").addEventListener("click", async () => {
             authors: ["Minecraft Mod Wizard"],
             product_type: "addon"
         },
+        dependencies: [
+            {
+                uuid: bpUUID,
+                version: "1.0.0"
+            }
+        ],
         capabilities: ["pbr"]
     }))
     lang = lang + `pack.name=${modData.modName}\n`
@@ -1090,20 +1320,73 @@ document.getElementById("downloadMod").addEventListener("click", async () => {
 
 document.getElementById("addElement").addEventListener("click", () => {
     document.getElementById("elementList").hidden = !document.getElementById("elementList").hidden
+    document.getElementById("elementContainer").hidden = !document.getElementById("elementList").hidden
 });
+
+async function loadBlock(save) {
+    if (firstTime) {
+        document.getElementById("elementList").hidden = true
+        document.getElementById("oreInfo").hidden = true
+        document.getElementById("blockEditor").hidden = false
+        temporaryItemData = {}
+        temporaryItemData.name = "Block"
+        document.getElementById("blockTexturePreview").src = "./images/missingTexture.png"
+        temporaryItemData.image = await blobOfImg(document.getElementById("blockTexturePreview"))
+        document.getElementById("blockName").value = "Block"
+        document.getElementById("isBlockOre").checked = false
+        document.getElementById("oreClusterSize").value = 8
+        temporaryItemData.code = null;
+        temporaryItemData.codeSave = null;
+    } else {
+        console.log(save)
+        document.getElementById("elementList").hidden = true
+        document.getElementById("elementContainer").hidden = true
+        document.getElementById("blockEditor").hidden = false
+        temporaryItemData = save
+        document.getElementById("blockName").value = save.name
+        const objectURL = URL.createObjectURL(save.image);
+        document.getElementById("blockTexturePreview").src = objectURL
+        document.getElementById("isBlockOre").checked = save.isOre
+        document.getElementById("oreClusterSize").value = save.oreClusterSize
+        document.getElementById("blockTexturePreview").onload = () => {
+            URL.revokeObjectURL(objectURL);
+        }
+    }
+}
+
+
+
+async function loadItem(save) {
+    if (firstTime) {
+        document.getElementById("elementList").hidden = true
+        document.getElementById("elementContainer").hidden = true
+        document.getElementById("itemEditor").hidden = false
+        temporaryItemData = {}
+        temporaryItemData.name = "Item"
+        document.getElementById("itemTexturePreview").src = "./images/missingTexture.png"
+        temporaryItemData.image = await blobOfImg(document.getElementById("itemTexturePreview"))
+        document.getElementById("itemName").value = "Item"
+        temporaryItemData.code = null;
+        temporaryItemData.codeSave = null;
+    } else {
+        console.log(save)
+        document.getElementById("elementList").hidden = true
+        document.getElementById("elementContainer").hidden = true
+        document.getElementById("itemEditor").hidden = false
+        temporaryItemData = save
+        document.getElementById("itemName").value = save.name
+        const objectURL = URL.createObjectURL(save.image);
+        document.getElementById("itemTexturePreview").src = objectURL
+        document.getElementById("itemTexturePreview").onload = () => {
+            URL.revokeObjectURL(objectURL);
+        }
+    }
+}
 
 document.getElementById("addItem").addEventListener("click", async () => {
-    document.getElementById("elementList").hidden = true
-    document.getElementById("itemEditor").hidden = false
-    temporaryItemData = {}
-    temporaryItemData.name = "Item"
-    document.getElementById("itemTexturePreview").src = "./images/missingTexture.png"
-    temporaryItemData.image = await blobOfImg(document.getElementById("itemTexturePreview"))
-    document.getElementById("itemName").value = "Item"
-    temporaryItemData.code = null;
-    temporaryItemData.codeSave = null;
+    firstTime = true;
+    loadItem(null);
 });
-
 document.getElementById("itemTexturePreview").addEventListener("click", async () => {
     document.getElementById("itemEditor").hidden = true
     const newImg = await promptTexture()
@@ -1117,10 +1400,52 @@ document.getElementById("itemTexturePreview").addEventListener("click", async ()
 });
 
 document.getElementById("saveItem").addEventListener("click", () => {
-    temporaryItemData.name = document.getElementById("itemName").value
-    modData.items.push(temporaryItemData);
-    temporaryItemData = {}
-    document.getElementById("itemEditor").hidden = true
+    if (firstTime) {
+        temporaryItemData.name = document.getElementById("itemName").value
+        temporaryItemData.uuid = crypto.randomUUID();
+        document.getElementById("itemEditor").hidden = true
+        document.getElementById("elementContainer").hidden = false
+        const newButton = document.createElement("div")
+        newButton.style.width = "100px"
+        newButton.style.height = "50px"
+        newButton.style.outlineColor = "white"
+        newButton.style.outlineWidth = "3px"
+        newButton.style.backgroundColor = "#242424"
+        newButton.style.outlineStyle = "solid"
+        const newButtonText = document.createElement("p");
+        newButtonText.innerText = temporaryItemData.name;
+        newButtonText.style.pointerEvents = "none";
+        newButton.appendChild(newButtonText);
+        newButton.dataset.uuid = temporaryItemData.uuid
+        newButton.addEventListener("click", function (e) {
+            firstTime = false;
+
+            const uuid = e.target.dataset.uuid;
+            const save = modData.items.find(element => element.uuid === uuid);
+
+            if (save) {
+                loadItem(save);
+            }
+        });
+
+        document.getElementById("elementContainer").appendChild(newButton);
+        temporaryItemData.button = newButton;
+        modData.items.push(temporaryItemData);
+        temporaryItemData = {}
+    } else {
+        temporaryItemData.name = document.getElementById("itemName").value
+        document.getElementById("elementContainer").hidden = false
+        const index = modData.items.findIndex(
+            item => item.uuid === temporaryItemData.uuid
+        );
+
+        if (index !== -1) {
+            modData.items[index] = temporaryItemData;
+        }
+        document.getElementById("itemEditor").hidden = true
+        modData.items[index].button.getElementsByTagName("p")[0].innerText = temporaryItemData.name
+        temporaryItemData = {}
+    }
 });
 
 document.getElementById("modTexturePreview").addEventListener("click", async () => {
@@ -1136,18 +1461,8 @@ document.getElementById("modTexturePreview").addEventListener("click", async () 
 });
 
 document.getElementById("addBlock").addEventListener("click", async () => {
-    document.getElementById("elementList").hidden = true
-    document.getElementById("oreInfo").hidden = true
-    document.getElementById("blockEditor").hidden = false
-    temporaryItemData = {}
-    temporaryItemData.name = "Block"
-    document.getElementById("blockTexturePreview").src = "./images/missingTexture.png"
-    temporaryItemData.image = await blobOfImg(document.getElementById("blockTexturePreview"))
-    document.getElementById("blockName").value = "Block"
-    document.getElementById("isBlockOre").checked = false
-    document.getElementById("oreClusterSize").value = 8
-    temporaryItemData.code = null;
-    temporaryItemData.codeSave = null;
+    firstTime = true;
+    loadBlock(null);
 });
 
 document.getElementById("blockTexturePreview").addEventListener("click", async () => {
@@ -1163,12 +1478,54 @@ document.getElementById("blockTexturePreview").addEventListener("click", async (
 });
 
 document.getElementById("saveBlock").addEventListener("click", () => {
-    temporaryItemData.name = document.getElementById("blockName").value
-    temporaryItemData.isOre = document.getElementById("isBlockOre").checked
-    temporaryItemData.oreClusterSize = Number(document.getElementById("oreClusterSize").value)
-    modData.blocks.push(temporaryItemData);
-    temporaryItemData = {}
-    document.getElementById("blockEditor").hidden = true
+    if (firstTime) {
+        temporaryItemData.name = document.getElementById("blockName").value
+        temporaryItemData.isOre = document.getElementById("isBlockOre").checked
+        temporaryItemData.oreClusterSize = Number(document.getElementById("oreClusterSize").value)
+        temporaryItemData.uuid = crypto.randomUUID();
+        document.getElementById("elementContainer").hidden = false
+        const newButton = document.createElement("div")
+        newButton.style.width = "100px"
+        newButton.style.height = "50px"
+        newButton.style.outlineColor = "white"
+        newButton.style.outlineWidth = "3px"
+        newButton.style.backgroundColor = "#242424"
+        newButton.style.outlineStyle = "solid"
+        const newButtonText = document.createElement("p");
+        newButtonText.innerText = temporaryItemData.name;
+        newButtonText.style.pointerEvents = "none";
+        newButton.appendChild(newButtonText);
+        newButton.dataset.uuid = temporaryItemData.uuid
+        newButton.addEventListener("click", function (e) {
+            firstTime = false;
+
+            const uuid = e.target.dataset.uuid;
+            const save = modData.blocks.find(element => element.uuid === uuid);
+
+            if (save) {
+                loadBlock(save);
+            }
+        });
+
+        document.getElementById("elementContainer").appendChild(newButton);
+        temporaryItemData.button = newButton;
+        modData.blocks.push(temporaryItemData);
+        temporaryItemData = {}
+        document.getElementById("blockEditor").hidden = true
+    } else {
+        temporaryItemData.name = document.getElementById("blockName").value
+        document.getElementById("elementContainer").hidden = false
+        const index = modData.blocks.findIndex(
+            item => item.uuid === temporaryItemData.uuid
+        );
+
+        if (index !== -1) {
+            modData.blocks[index] = temporaryItemData;
+        }
+        document.getElementById("blockEditor").hidden = true
+        modData.blocks[index].button.getElementsByTagName("p")[0].innerText = temporaryItemData.name
+        temporaryItemData = {}
+    }
 });
 
 document.getElementById("isBlockOre").addEventListener("change", () => {

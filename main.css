@@ -187,3 +187,35 @@ body {
     left: 0px;
     position: absolute;
 }
+
+#elementContainer {
+    width: 100%;
+    height: calc(100% - 50);
+    top: 50px;
+    left: 0px;
+    position: absolute;
+    display: flex;
+    padding: 20px;
+}
+
+#textureBrush {
+    image-rendering: pixelated;
+    border-width: 3px;
+    border-color: "#ffffff";
+    border-style: hidden;
+}
+
+#textureBrush:hover {
+    cursor: pointer;
+}
+
+#textureEraser {
+    image-rendering: pixelated;
+    border-width: 3px;
+    border-color: "#ffffff";
+    border-style: hidden;
+}
+
+#textureEraser:hover {
+    cursor: pointer;
+}

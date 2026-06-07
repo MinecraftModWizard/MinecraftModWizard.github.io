@@ -49,6 +49,10 @@
         <p>Make texture</p>
         <canvas id="textureCanvas" width="16" height="16"></canvas>
         <input id="textureColor" type="color">
+        <div style="flex-direction: row; display: flex; width: 300px; height: 50px; background-color: rgb(34, 34, 34);">
+            <img src="./images/brush.png" id="textureBrush">
+            <img src="./images/eraser.png" id="textureEraser">
+        </div>
         <button id="confirmTexture">Confirm</button>
     </div>
     <div id="itemEditor" hidden>
@@ -91,6 +95,7 @@
         </div>
         <div id="codeContainer"></div>
     </div>
+    <div id="elementContainer"></div>
     <script src="./main.js"></script>
 </body>
 
